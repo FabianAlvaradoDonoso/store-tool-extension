@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StoreTool</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <div>
+          <p class="app-title">StoreTool</p>
+          <p class="app-subtitle" id="active-domain">Loading...</p>
+        </div>
+        <button class="refresh" id="refresh">Refresh</button>
+      </header>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Cookies</h2>
+          <div class="panel-actions">
+            <span class="count" id="cookies-count">0</span>
+            <button class="panel-action danger" id="cookies-delete-all">Delete All</button>
+          </div>
+        </div>
+        <div class="item-list" id="cookies-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Local Storage</h2>
+          <div class="panel-actions">
+            <span class="count" id="local-storage-count">0</span>
+            <button class="panel-action danger" id="local-storage-delete-all">Delete All</button>
+          </div>
+        </div>
+        <div class="item-list" id="local-storage-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Session Storage</h2>
+          <div class="panel-actions">
+            <span class="count" id="session-storage-count">0</span>
+            <button class="panel-action danger" id="session-storage-delete-all">Delete All</button>
+          </div>
+        </div>
+        <div class="item-list" id="session-storage-list"></div>
+      </section>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

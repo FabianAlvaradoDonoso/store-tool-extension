@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "StoreTool",
+  "version": "1.0.0",
+  "description": "Inspect, copy, edit, and delete cookies and web storage for the active site.",
+  "action": {
+    "default_title": "StoreTool",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["activeTab", "cookies", "offscreen", "clipboardWrite", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"]
+}
