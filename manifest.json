@@ -5,11 +5,26 @@
   "description": "Inspect, copy, edit, and delete cookies and web storage for the active site.",
   "action": {
     "default_title": "StoreTool",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "48": "icon48.png",
+      "64": "icon64.png",
+      "128": "icon128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"
   },
-  "permissions": ["activeTab", "cookies", "offscreen", "clipboardWrite", "scripting"],
-  "host_permissions": ["http://*/*", "https://*/*"]
+  "permissions": [
+    "cookies",
+    "offscreen",
+    "clipboardWrite",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
 }
