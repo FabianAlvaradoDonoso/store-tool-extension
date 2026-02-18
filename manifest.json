@@ -20,8 +20,18 @@
   "permissions": [
     "cookies",
     "offscreen",
-    "clipboardWrite",
-    "scripting"
+    "clipboardWrite"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content-script.js"
+      ]
+    }
   ],
   "host_permissions": [
     "http://*/*",

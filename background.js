@@ -24,37 +24,8 @@ const copyToClipboardWithOffscreen = async (text) => {
   }
 }
 
-const copyToClipboardWithContentScript = async (text) => {
-  const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
-  const activeTab = tabs[0]
-  if (!activeTab?.id) {
-    throw new Error('Active tab not available')
-  }
-
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: activeTab.id },
-    func: (value) => {
-      const textValue = String(value ?? '')
-      return navigator.clipboard
-        .writeText(textValue)
-        .then(() => ({ ok: true }))
-        .catch((error) => ({ ok: false, error: String(error) }))
-    },
-    args: [text]
-  })
-
-  const result = results?.[0]?.result
-  if (!result?.ok) {
-    throw new Error(result?.error || 'Clipboard write failed')
-  }
-}
-
 const copyToClipboard = async (text) => {
-  try {
-    await copyToClipboardWithOffscreen(text)
-  } catch (error) {
-    await copyToClipboardWithContentScript(text)
-  }
+  await copyToClipboardWithOffscreen(text)
 }
 
 const getActiveTabUrl = async () => {

@@ -44,25 +44,6 @@ const copyWithPopupClipboard = async (text) => {
   }
 }
 
-const copyWithActiveTab = async (text) => {
-  const tab = await fetchActiveTab()
-  if (!tab?.id) {
-    return false
-  }
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (value) => {
-      const textValue = String(value ?? '')
-      return navigator.clipboard
-        .writeText(textValue)
-        .then(() => ({ ok: true }))
-        .catch((error) => ({ ok: false, error: String(error) }))
-    },
-    args: [text]
-  })
-  return Boolean(results?.[0]?.result?.ok)
-}
-
 const copyText = async (text, toastTarget) => {
   const response = await new Promise((resolve) => {
     chrome.runtime.sendMessage({ type: 'COPY_TEXT', text }, (reply) => {
@@ -81,12 +62,6 @@ const copyText = async (text, toastTarget) => {
 
   const popupCopied = await copyWithPopupClipboard(text)
   if (popupCopied) {
-    showToast(toastTarget, 'Copied')
-    return
-  }
-
-  const tabCopied = await copyWithActiveTab(text)
-  if (tabCopied) {
     showToast(toastTarget, 'Copied')
     return
   }
@@ -138,20 +113,13 @@ const setCookieValue = async (cookie, value) => {
 }
 
 const setStorageValue = async (storageType, key, value) => {
-  const tab = await fetchActiveTab()
-  if (!tab?.id) {
-    return false
-  }
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (type, itemKey, itemValue) => {
-      const storage = type === 'local' ? window.localStorage : window.sessionStorage
-      storage.setItem(itemKey, itemValue)
-      return true
-    },
-    args: [storageType, key, String(value ?? '')]
+  const response = await sendMessageToActiveTab({
+    type: 'SET_STORAGE',
+    storageType,
+    key,
+    value: String(value ?? '')
   })
-  return Boolean(results?.[0]?.result)
+  return Boolean(response?.ok)
 }
 
 const createItem = ({ name, value, showName = true, onSave }) => {
@@ -294,31 +262,31 @@ const fetchActiveTab = async () => {
   return tabs[0]
 }
 
-const getStorageEntries = async (type) => {
+const sendMessageToActiveTab = async (payload) => {
   const tab = await fetchActiveTab()
   if (!tab?.id) {
+    return { ok: false, error: 'Active tab not available' }
+  }
+  return new Promise((resolve) => {
+    chrome.tabs.sendMessage(tab.id, payload, (response) => {
+      if (chrome.runtime.lastError) {
+        resolve({ ok: false, error: chrome.runtime.lastError.message })
+        return
+      }
+      resolve(response)
+    })
+  })
+}
+
+const getStorageEntries = async (type) => {
+  const response = await sendMessageToActiveTab({
+    type: 'READ_STORAGE',
+    storageType: type
+  })
+  if (!response?.ok) {
     return []
   }
-
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (storageType) => {
-      const storage =
-        storageType === 'local' ? window.localStorage : window.sessionStorage
-      const entries = []
-      for (let i = 0; i < storage.length; i += 1) {
-        const key = storage.key(i)
-        if (!key) {
-          continue
-        }
-        entries.push({ name: key, value: storage.getItem(key) })
-      }
-      return entries
-    },
-    args: [type]
-  })
-
-  return results?.[0]?.result ?? []
+  return response.entries ?? []
 }
 
 const getCookies = async () => {
@@ -375,39 +343,20 @@ const updateListAfterDelete = (
 }
 
 const deleteStorageItem = async (storageType, key) => {
-  const tab = await fetchActiveTab()
-  if (!tab?.id) {
-    return false
-  }
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (type, itemKey) => {
-      const storage =
-        type === 'local' ? window.localStorage : window.sessionStorage
-      storage.removeItem(itemKey)
-      return true
-    },
-    args: [storageType, key]
+  const response = await sendMessageToActiveTab({
+    type: 'REMOVE_STORAGE',
+    storageType,
+    key
   })
-  return Boolean(results?.[0]?.result)
+  return Boolean(response?.ok)
 }
 
 const clearStorage = async (storageType) => {
-  const tab = await fetchActiveTab()
-  if (!tab?.id) {
-    return false
-  }
-  const results = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: (type) => {
-      const storage =
-        type === 'local' ? window.localStorage : window.sessionStorage
-      storage.clear()
-      return true
-    },
-    args: [storageType]
+  const response = await sendMessageToActiveTab({
+    type: 'CLEAR_STORAGE',
+    storageType
   })
-  return Boolean(results?.[0]?.result)
+  return Boolean(response?.ok)
 }
 
 const renderCookies = (cookies) => {
